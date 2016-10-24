@@ -2,17 +2,21 @@ This is a very simple backend to be used in a DEVELOPMENT environment.
 
 Provides the following services:
 
-/dl
+## /dl
+
   receives a post with the html body and a parameter asking for "download" or "email".
   (it does inlining using Styliner) since Mosaico 0.15 CSS inlining happens in the client.
   if asked to send an email it sends it using nodemailer
 
-/upload
+## /upload
+
   GET returns a JSON list of previously uploaded images 
   POST to upload images (using the jQuery-file-upload protocol)
   when uploading it also create thumbnails for each uploaded image.
 
-/img
+## /img
+
+
   GET with src, method and params query values
   method can be "placeholder", "cover" or "resize"
   "placeholder" will return a placeholder image with the given width/height (encoded in params as "width,height")

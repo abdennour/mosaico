@@ -36,44 +36,4 @@ app.post('/:uri/', app.routingEngine);
 app.use('/upload/', upload.fileHandler(services.UploadService.uploadOptions));
 
 
-app.post('/dl/', function(req, res) {
-    var response = function(source) {
-
-        if (req.body.action == 'download') {
-            res.setHeader('Content-disposition', 'attachment; filename=' + req.body.filename);
-            res.setHeader('Content-type', 'text/html');
-            res.write(source);
-            res.end();
-        } else if (req.body.action == 'email') {
-            var nodemailer = require('nodemailer');
-            var transporter = nodemailer.createTransport(config.emailTransport);
-
-            var mailOptions = extend({
-                to: req.body.rcpt, // list of receivers
-                subject: req.body.subject, // Subject line
-                html: source // html body
-            }, config.emailOptions);
-
-            transporter.sendMail(mailOptions, function(error, info){
-                if (error) {
-                    console.log(error);
-                    res.status(500).send('Error: '+error);
-                    res.write('ERR');
-                } else {
-                    console.log('Message sent: ' + info.response);
-                    res.send('OK: '+info.response);
-                }
-            });
-        }
-
-    };
-
-    /*
-    var Styliner = require('styliner');
-    var styliner = new Styliner(__dirname, { keepinvalid: true });
-    styliner.processHTML(req.body.html).then(response);
-    */
-    response(req.body.html);
-});
-
 module.exports = app;

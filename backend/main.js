@@ -1,15 +1,17 @@
 "use strict";
 /* global module: false, console: false, __dirname: false */
 
-var express = require('express');
-var upload = require('jquery-file-upload-middleware');
-var bodyParser = require('body-parser');
-var fs = require('fs');
-var _ = require('lodash');
-var app = express();
-var gm = require('gm').subClass({imageMagick: true});
-var config = require('../server-config.js');
-var extend = require('util')._extend;
+const express = require('express');
+const upload = require('jquery-file-upload-middleware');
+const bodyParser = require('body-parser');
+
+
+
+const config = require('../server-config.js');
+const extend = require('util')._extend;
+const app = express();
+const routers = require('./routers.js');
+const services = require('./services');
 
 app.use(require('connect-livereload')({ ignore: [/^\/dl/] }));
 // app.use(require('morgan')('dev'));
@@ -18,102 +20,25 @@ app.use(bodyParser.json({limit: '5mb'}));
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   limit: '5mb',
   extended: true
-})); 
-
-var listFiles = function (req, options, callback) {
-
-    var files = [];
-    var counter = 1;
-    var finish = function () {
-        if (!--counter)
-            callback(files);
-    };
-
-    var uploadHost = req.protocol + '://' + req.get('host');
-
-    fs.readdir(options.uploadDir, _.bind(function (err, list) {
-        _.each(list, function (name) {
-            var stats = fs.statSync(options.uploadDir + '/' + name);
-            if (stats.isFile()) {
-                var file = {
-                    name: name,
-                    url: uploadHost + options.uploadUrl + '/' + name,
-                    size: stats.size
-                };
-                _.each(options.imageVersions, function (value, version) {
-                    counter++;
-                    fs.exists(options.uploadDir + '/' + version + '/' + name, function (exists) {
-                        if (exists)
-                            file.thumbnailUrl = uploadHost + options.uploadUrl + '/' + version + '/' + name;
-                        finish();
-                    });
-                });
-                files.push(file);
-            }
-        }, this);
-        finish();
-    }, this));
-}; 
-
-var uploadOptions = {
-  tmpDir: '.tmp',
-  uploadDir: './uploads',
-  uploadUrl: '/uploads',
-  imageVersions: { thumbnail: { width: 90, height: 90 } }
-};
-
-app.get('/upload/', function(req, res) {
-    listFiles(req, uploadOptions, function (files) {
-      res.json({ files: files });
-    }); 
-});
-
-app.use('/upload/', upload.fileHandler(uploadOptions));
-
-// imgProcessorBackend + "?src=" + encodeURIComponent(src) + "&method=" + encodeURIComponent(method) + "&params=" + encodeURIComponent(width + "," + height);
-app.get('/img/', function(req, res) {
-
-    var params = req.query.params.split(',');
-
-    if (req.query.method == 'placeholder') {
-        var out = gm(params[0], params[1], '#707070');
-        res.set('Content-Type', 'image/png');
-        var x = 0, y = 0;
-        var size = 40;
-        // stripes
-        while (y < params[1]) {
-            out = out
-              .fill('#808080')
-              .drawPolygon([x, y], [x + size, y], [x + size*2, y + size], [x + size*2, y + size*2])
-              .drawPolygon([x, y + size], [x + size, y + size*2], [x, y + size*2]);
-            x = x + size*2;
-            if (x > params[0]) { x = 0; y = y + size*2; }
-        }
-        // text
-        out = out.fill('#B0B0B0').fontSize(20).drawText(0, 0, params[0] + ' x ' + params[1], 'center');
-        out.stream('png').pipe(res);
-
-    } else if (req.query.method == 'resize') {
-        var ir = gm(req.query.src);
-        ir.format(function(err,format) {
-            if (!err) res.set('Content-Type', 'image/'+format.toLowerCase());
-            ir.autoOrient().resize(params[0] == 'null' ? null : params[0], params[1] == 'null' ? null : params[1]).stream().pipe(res);
-        });
-
-    } else if (req.query.method == 'cover') {
-        var ic = gm(req.query.src);
-        ic.format(function(err,format) {
-            if (!err) res.set('Content-Type', 'image/'+format.toLowerCase());
-            ic.autoOrient().resize(params[0],params[1]+'^').gravity('Center').extent(params[0], params[1]+'>').stream().pipe(res);
-        });
-
+}));
+app.routingEngine = function(req, res) {
+    try {
+        var {Controller,action} = routers[req.params.uri];
+        action = action || 'index';
+        new Controller(req,res,services)[action]();
+    } catch (e) {
+      console.log(e);
+      res.status(404).end();
     }
+};
+app.get('/:uri/', app.routingEngine);
+app.post('/:uri/', app.routingEngine);
+app.use('/upload/', upload.fileHandler(services.UploadService.uploadOptions));
 
-});
 
 app.post('/dl/', function(req, res) {
     var response = function(source) {
-        
+
         if (req.body.action == 'download') {
             res.setHeader('Content-disposition', 'attachment; filename=' + req.body.filename);
             res.setHeader('Content-type', 'text/html');
@@ -140,7 +65,7 @@ app.post('/dl/', function(req, res) {
                 }
             });
         }
-        
+
     };
 
     /*

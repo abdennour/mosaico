@@ -1,4 +1,5 @@
 const AbstractController = require('./AbstractController.js');
+const extend = require('util')._extend;
 
 class ExportController extends AbstractController {
 

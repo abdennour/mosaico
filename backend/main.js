@@ -8,7 +8,6 @@ const bodyParser = require('body-parser');
 
 
 const config = require('../server-config.js');
-const extend = require('util')._extend;
 const app = express();
 const routing = require('./routing');
 const services = require('./services');

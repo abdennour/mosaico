@@ -8,7 +8,7 @@ class UploadService {
   get uploadOptions () {
     return UploadService.uploadOptions;
   }
-  listFiles(uploadHost, options, callback) {
+  listFiles(uploadHost, callback) {
 
       var files = [];
       var counter = 1;
@@ -16,6 +16,7 @@ class UploadService {
           if (!--counter)
               callback(files);
       };
+      let options = this.uploadOptions ;
       fs.readdir(options.uploadDir, _.bind(function (err, list) {
           _.each(list, function (name) {
               var stats = fs.statSync(options.uploadDir + '/' + name);

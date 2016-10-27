@@ -44,8 +44,8 @@ class ExportController extends AbstractController {
         styliner.processHTML(that.request.body.html).then(response);
         */
       response(that.request.body.html);
-    }
   }
+
 
   email() {
 

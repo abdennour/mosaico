@@ -6,7 +6,7 @@ class ImageController extends AbstractController {
   constructor() {
     super(...arguments);
   }
-  
+
   // imgProcessorBackend + "?src=" + encodeURIComponent(src) + "&method=" + encodeURIComponent(method) + "&params=" + encodeURIComponent(width + "," + height);
   processing() {
     var params = this.request.query.params.split(',');
@@ -27,20 +27,20 @@ class ImageController extends AbstractController {
         }
         // text
         out = out.fill('#B0B0B0').fontSize(20).drawText(0, 0, params[0] + ' x ' + params[1], 'center');
-        out.stream('png').pipe(res);
+        out.stream('png').pipe(this.response);
 
     } else if (this.request.query.method == 'resize') {
         var ir = gm(this.request.query.src);
         ir.format(function(err,format) {
             if (!err) this.response.set('Content-Type', 'image/'+format.toLowerCase());
-            ir.autoOrient().resize(params[0] == 'null' ? null : params[0], params[1] == 'null' ? null : params[1]).stream().pipe(res);
+            ir.autoOrient().resize(params[0] == 'null' ? null : params[0], params[1] == 'null' ? null : params[1]).stream().pipe(this.response);
         });
 
     } else if (this.request.query.method == 'cover') {
         var ic = gm(this.request.query.src);
         ic.format(function(err,format) {
             if (!err) this.response.set('Content-Type', 'image/'+format.toLowerCase());
-            ic.autoOrient().resize(params[0],params[1]+'^').gravity('Center').extent(params[0], params[1]+'>').stream().pipe(res);
+            ic.autoOrient().resize(params[0],params[1]+'^').gravity('Center').extent(params[0], params[1]+'>').stream().pipe(this.response);
         });
 
     }

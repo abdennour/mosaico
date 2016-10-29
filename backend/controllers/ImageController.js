@@ -30,7 +30,7 @@ class ImageController extends AbstractController {
         out.stream('png').pipe(this.response);
 
     } else if (this.request.query.method == 'resize') {
-        var ir = gm(that.request.query.src.replace('http://mosaico.myownaccount.net:9006','../..'));
+        var ir = gm(that.request.query.src);
         ir.format(function(err,format) {
             if (!err) that.response.set('Content-Type', 'image/'+format.toLowerCase());
             ir.autoOrient().resize(params[0] == 'null' ? null : params[0], params[1] == 'null' ? null : params[1]).stream().pipe(that.response);

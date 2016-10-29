@@ -1,6 +1,6 @@
 const AbstractController = require('./AbstractController.js');
 const extend = require('util')._extend;
-
+const config = require('../../server-config.js');
 class ExportController extends AbstractController {
 
   constructor() {
@@ -12,9 +12,9 @@ class ExportController extends AbstractController {
     var response = function(source) {
       if (that.request.body.action == 'download') {
           that.response.setHeader('Content-disposition', 'attachment; filename=' + that.request.body.filename);
-          that.response.setHeader('Content-type', 'text/html');
-          that.response.write(source);
-          that.response.end();
+          //that.response.setHeader('Content-type', 'text/html');
+          that.response.writeHead(200, {"Content-Type": "text/html",'Content-disposition':'attachment; filename=' + that.request.body.filename});
+          that.response.end(source);
       } else if (that.request.body.action == 'email') {
             var nodemailer = require('nodemailer');
             var transporter = nodemailer.createTransport(config.emailTransport);

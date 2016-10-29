@@ -10,9 +10,9 @@ class ImageController extends AbstractController {
   // imgProcessorBackend + "?src=" + encodeURIComponent(src) + "&method=" + encodeURIComponent(method) + "&params=" + encodeURIComponent(width + "," + height);
   processing() {
     var params = this.request.query.params.split(',');
-
+    var that= this;
     if (this.request.query.method == 'placeholder') {
-        var out = gm(params[0], params[1], '#707070');
+        var out = gm(params[0], params[1] , '#707070');
         this.response.set('Content-Type', 'image/png');
         var x = 0, y = 0;
         var size = 40;
@@ -32,15 +32,15 @@ class ImageController extends AbstractController {
     } else if (this.request.query.method == 'resize') {
         var ir = gm(this.request.query.src);
         ir.format(function(err,format) {
-            if (!err) this.response.set('Content-Type', 'image/'+format.toLowerCase());
-            ir.autoOrient().resize(params[0] == 'null' ? null : params[0], params[1] == 'null' ? null : params[1]).stream().pipe(this.response);
+            if (!err) that.response.set('Content-Type', 'image/'+format.toLowerCase());
+            ir.autoOrient().resize(params[0] == 'null' ? null : params[0], params[1] == 'null' ? null : params[1]).stream().pipe(that.response);
         });
 
     } else if (this.request.query.method == 'cover') {
         var ic = gm(this.request.query.src);
         ic.format(function(err,format) {
-            if (!err) this.response.set('Content-Type', 'image/'+format.toLowerCase());
-            ic.autoOrient().resize(params[0],params[1]+'^').gravity('Center').extent(params[0], params[1]+'>').stream().pipe(this.response);
+            if (!err) that.response.set('Content-Type', 'image/'+format.toLowerCase());
+            ic.autoOrient().resize(params[0],params[1]+'^').gravity('Center').extent(params[0], params[1]+'>').stream().pipe(that.response);
         });
 
     }

@@ -12,7 +12,6 @@ class ExportController extends AbstractController {
     var response = function(source) {
       if (that.request.body.action == 'download') {
           that.response.setHeader('Content-disposition', 'attachment; filename=' + that.request.body.filename);
-          //that.response.setHeader('Content-type', 'text/html');
           that.response.writeHead(200, {"Content-Type": "text/html",'Content-disposition':'attachment; filename=' + that.request.body.filename});
           that.response.end(source);
       } else if (that.request.body.action == 'email') {
@@ -51,9 +50,10 @@ class ExportController extends AbstractController {
   email() {
 
   }
-
+  // index() action should redirect to this action... However, index() now does not.
   download() {
-
+    this.response.writeHead(200, {"Content-Type": "text/html",'Content-disposition':'attachment; filename=' + this.request.body.filename});
+    this.response.end(this.request.body.html);
   }
 }
 
